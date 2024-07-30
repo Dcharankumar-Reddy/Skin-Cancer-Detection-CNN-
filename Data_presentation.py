@@ -1,0 +1,48 @@
+
+import cv2
+import numpy as np
+import pandas as pd
+import os
+import cv2
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+
+# Load the metadata
+metadata = pd.read_csv('HAM10000_metadata.csv')
+
+# Encode the labels
+le = LabelEncoder()
+metadata['dx'] = le.fit_transform(metadata['dx'])
+
+# Load and preprocess images
+image_size = 128
+def load_and_resize_image(image_path, image_size):
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, (image_size, image_size))
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+# Define the path to the images
+image_path = 'path_to_images/'
+images = []
+labels = []
+
+for index, row in metadata.iterrows():
+    image_file = row['image_id'] + '.jpg'
+    image = load_and_resize_image(os.path.join(image_path, image_file), image_size)
+    images.append(image)
+    labels.append(row['dx'])
+
+images = np.array(images)
+labels = np.array(labels)
+
+# Normalize the images
+images = images / 255.0
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
